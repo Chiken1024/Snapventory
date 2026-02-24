@@ -1,4 +1,4 @@
-from opencv import camera
+from opencv.camera import get_video_capture, get_camera_data, end_video_capture
 from tesseract.scan import scan
 
 print("""
@@ -6,12 +6,12 @@ OpenCV text scanner
 Controls: 'ESC' to quit, 's' to scan
 """)
 
-cap = camera.get_capture()
+cap = get_video_capture()
 
 while True:
-  frame, key = camera.get_data(cap)
+  frame, key = get_camera_data(cap)
   
   if key == 27: break
   elif key == ord("s"): print(scan(frame))
 
-camera.end_capture(cap)
+end_video_capture(cap)
