@@ -1,17 +1,16 @@
-from opencv.camera import get_video_capture, get_camera_data, end_video_capture
-from tesseract.scan import scan
+from cv2 import VideoCapture
+
+from interface.gui import GUI
 
 print("""
 OpenCV text scanner
-Controls: 'ESC' to quit, 's' to scan
+Controls: SPACE to scan
 """)
 
-cap = get_video_capture()
+cap: VideoCapture = VideoCapture(0)
 
-while True:
-  frame, key = get_camera_data(cap)
-  
-  if key == 27: break
-  elif key == ord("s"): print(scan(frame))
+gui: GUI = GUI(cap)
 
-end_video_capture(cap)
+gui.update()
+
+cap.release()
