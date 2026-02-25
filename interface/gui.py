@@ -1,6 +1,7 @@
 import tkinter as tk
+from tkinter.filedialog import askopenfilename#, asksaveasfile
 
-from interface.webcam import Webcam
+from interface.input_display import InputDisplay
 from tesseract.scan import scan
 
 class GUI:
@@ -8,25 +9,40 @@ class GUI:
     self.cap = cap
     
     self.root: tk.Tk = tk.Tk("Snapventory")
-    self.root.geometry("660x535")
-    self.root.configure(background="#1e1e1e")
+    self.root.geometry("660x540")
+    self.root.wm_minsize(660, 540)
+    self.root.wm_maxsize(660, 540)
+    self.root.configure(background="#252526")
 
-    self.webcam_label: Webcam = Webcam(self.root, "#ffffff")
-    self.webcam_label.pack(pady=10)
+    self.input_display_label: InputDisplay = InputDisplay(
+      self.root, "#2d2d30", (91, 32)
+    )
+    self.input_display_label.place(x=8, y=45)
 
     self.open_camera_button: tk.Button = tk.Button(
-      self.root, text="Open Camera", background="#3e3e42", command=self.update
+      self.root, text="Open Camera", command=self.update,
+      foreground="#ffffff", background="#3e3e42"
     )
-    self.open_camera_button.pack()
+    self.open_camera_button.place(x=8, y=10)
+
+    self.load_image_button: tk.Button = tk.Button(
+      self.root, text="Load image", command=self.load_image,
+      background="#3e3e42", foreground="#ffffff"
+    )
+    self.load_image_button.place(x=100, y=10)
     
-    def key_handler(event) -> None:
-      if event.keysym == "space":
-        print(scan(self.webcam_label.get_frame(self.cap)))
-
-    self.root.bind("<Key>", key_handler)
-
+    self.root.bind("<Key>", self.key_handler)
     self.root.mainloop()
 
   def update(self) -> None:
-    if self.webcam_label.show(self.cap):
-      self.webcam_label.after(5, self.update)
+    if self.input_display_label.show_webcam(self.cap):
+      self.input_display_label.after(5, self.update)
+  
+  def load_image(self):
+    path: str = askopenfilename(title="Open image file")
+    
+    self.input_display_label.show_image(path)
+  
+  def key_handler(self, event) -> None:
+    if self.input_display_label.mode == "webcam" and event.keysym == "space":
+      print(scan(self.input_display_label.get_webcam_frame(self.cap)))
