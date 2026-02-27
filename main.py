@@ -11,6 +11,4 @@ cap: VideoCapture = VideoCapture(0)
 
 gui: GUI = GUI(cap)
 
-gui.update()
-
 cap.release()
