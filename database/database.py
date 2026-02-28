@@ -15,7 +15,7 @@ class DatabaseConnection:
 
     self.cursor.executescript(
 """
-CREATE TABLE budget (budget INTEGER);
+CREATE TABLE budget (balance FLOAT);
 INSERT INTO budget VALUES (0.0);
 
 CREATE TABLE inventory (
@@ -29,6 +29,14 @@ CREATE TABLE inventory (
 
     self.connection.commit()
 
+  def update_budget(self, amount: float) -> None:
+    try:
+      self.cursor.execute("UPDATE budget SET balance = balance + ?", (amount,))
+      
+      self.connection.commit()
+    except:
+      print("Failed to update budget: incorrect format")
+
   def add(self, name: str, quantity: int) -> None:
     try:
       self.cursor.execute("INSERT INTO inventory (name, quantity) VALUES (?, ?) ON CONFLICT (name) DO UPDATE SET quantity = quantity + excluded.quantity", (name, quantity))
@@ -41,7 +49,7 @@ CREATE TABLE inventory (
   
   def remove(self, name: str, quantity: int) -> None:
     try:
-      self.cursor.execute("UPDATE inventory SET quantity = MAX(quantity - (?), 0) WHERE name = ?", (quantity, name))
+      self.cursor.execute("UPDATE inventory SET quantity = MAX(quantity - ?, 0) WHERE name = ?", (quantity, name))
       self.cursor.execute("DELETE FROM inventory WHERE quantity = 0")
       self.connection.commit()
 
@@ -57,3 +65,5 @@ CREATE TABLE inventory (
     print(self.cursor.fetchall())
 
   def close(self) -> None: self.connection.close()
+
+#DatabaseConnection("data.db").reset()

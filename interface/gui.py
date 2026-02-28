@@ -61,18 +61,26 @@ class GUI:
     )
     self.output_frame.place(x=4, y=532)
 
-    self.output_type_label: tk.Label = tk.Label(
-      self.output_frame, text="Price:\nItems:", relief="sunken",
-      background="#2d2d30", foreground="#ffffff"
-    )
-    self.output_type_label.place(x=4, y=4)
-
     self.output_text: tk.Text = tk.Text(
-      self.output_frame, relief="sunken", width=60, height=6,
+      self.output_frame, relief="sunken", width=79, height=6,
       background="#2d2d30", foreground="#ffffff"
     )
-    self.output_text.place(x=47, y=4)
+    self.output_text.place(x=4, y=4)
     self.output_text.insert(tk.END, "[Press space to scan webcam]")
+
+    self.save_button: tk.Button = tk.Button(
+      self.output_frame, text="Save to Inventory", width=13,
+      command=self.save_to_inventory,
+      background="#4f4f54", foreground="#ffffff"
+    )
+    self.save_button.place(x=534, y=10)
+
+    self.edit_inventory_button: tk.Button = tk.Button(
+      self.output_frame, text="Edit Inventory", width=13,
+      command=self.edit_inventory,
+      background="#3e3e42", foreground="#ffffff"
+    )
+    self.edit_inventory_button.place(x=534, y=41)
 
   def start_webcam(self) -> None:
     self.input_display_label.mode = "webcam"
@@ -106,6 +114,24 @@ class GUI:
     self.scan_image_button.place_forget()
     self.input_display_label.cancel()
   
+  def save_to_inventory(self):
+    text: str = self.output_text.get("1.0", tk.END).split("\n")
+    text.pop()
+
+    price: float = float(text[0].split(" ")[-1])
+    
+    self.db.update_budget(-price)
+
+    for item in text[2:]:
+      name: str = " ".join(item.split(" ")[1:])
+      quantity: int = item.split("x")[0]
+      self.db.add(name, quantity)
+
+    self.db.display()
+
+  def edit_inventory(self) -> None:
+    print("Edit inventory")
+
   def key_handler(self, event) -> None:
     if self.input_display_label.mode == "webcam" and event.keysym == "space":
       self.output_text.delete("1.0", tk.END)
