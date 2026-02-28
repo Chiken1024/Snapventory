@@ -2,7 +2,7 @@ import cv2 as cv
 from PIL import ImageTk, Image
 
 def process_image(image: cv.Mat) -> cv.Mat:
-  return cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+  return cv.GaussianBlur(cv.cvtColor(image, cv.COLOR_BGR2GRAY), (3, 3), .0)
 
 def mat_to_photoimage(image: cv.Mat) -> ImageTk.PhotoImage:
   return ImageTk.PhotoImage(

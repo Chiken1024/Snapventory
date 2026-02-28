@@ -30,9 +30,9 @@ class InputDisplay(tk.Label):
         return ret
       case "file":
         self.path = path
-        photoimage = path_to_photoimage(path)
+        photoimage: tk.PhotoImage = path_to_photoimage(path)
         self.configure(image=photoimage, width=640, height=480)
-        self.image = photoimage
+        self.image: tk.PhotoImage = photoimage
         self.update()
   
   def cancel(self) -> None:

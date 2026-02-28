@@ -1,14 +1,10 @@
 from cv2 import VideoCapture
 
 from interface.gui import GUI
-
-print("""
-OpenCV text scanner
-Controls: SPACE to scan
-""")
+from database.database import DatabaseConnection
 
 cap: VideoCapture = VideoCapture(0)
-
-gui: GUI = GUI(cap)
-
+db: DatabaseConnection = DatabaseConnection("data.db")
+gui: GUI = GUI(cap, db)
 cap.release()
+db.close()
