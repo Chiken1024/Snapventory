@@ -1,6 +1,7 @@
 import tkinter as tk
 
 from opencv.process_image import mat_to_photoimage, path_to_photoimage
+from opencv.segment_image import segment_image
 
 class InputDisplay(tk.Label):
   def __init__(self, cap, master = None, background = None) -> None:

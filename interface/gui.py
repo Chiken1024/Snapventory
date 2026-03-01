@@ -115,8 +115,10 @@ class GUI:
     self.input_display_label.cancel()
   
   def save_to_inventory(self):
-    text: str = self.output_text.get("1.0", tk.END).split("\n")
-    text.pop()
+    text: list[str] = self.output_text.get("1.0", tk.END).split("\n")
+    while "" in text: text.remove("")
+
+    print(text)
 
     price: float = float(text[0].split(" ")[-1])
     
