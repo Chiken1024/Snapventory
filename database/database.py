@@ -58,11 +58,11 @@ CREATE TABLE inventory (
     except:
       print("Failed to remove item(s) from database: Incorrect format, item doesn't exist")
 
-  def display(self) -> None:
+  def get(self) -> tuple[float, list]:
     self.cursor.execute("SELECT * FROM budget")
-    print(self.cursor.fetchall())
+    budget = self.cursor.fetchall()[0]
     self.cursor.execute("SELECT * FROM inventory")
-    print(self.cursor.fetchall())
+    return budget, self.cursor.fetchall()
 
   def close(self) -> None: self.connection.close()
 

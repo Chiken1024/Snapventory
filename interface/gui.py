@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 
 from interface.input_display import InputDisplay
@@ -10,7 +11,8 @@ class GUI:
   def __init__(self, cap, db: DatabaseConnection) -> None:
     self.db: DatabaseConnection = db
     
-    self.root: tk.Tk = tk.Tk("Snapventory")
+    self.root: tk.Tk = tk.Tk()
+    self.root.title("Snapventory")
     self.root.geometry("651x644")
     self.root.wm_minsize(651, 644)
     self.root.wm_maxsize(651, 644)
@@ -66,7 +68,7 @@ class GUI:
       background="#2d2d30", foreground="#ffffff"
     )
     self.output_text.place(x=4, y=4)
-    self.output_text.insert(tk.END, "[Press space to scan webcam]")
+    self.output_text.insert(tk.END, "Price: \nItems:\n")
 
     self.save_button: tk.Button = tk.Button(
       self.output_frame, text="Save to Inventory", width=13,
@@ -118,8 +120,6 @@ class GUI:
     text: list[str] = self.output_text.get("1.0", tk.END).split("\n")
     while "" in text: text.remove("")
 
-    print(text)
-
     price: float = float(text[0].split(" ")[-1])
     
     self.db.update_budget(-price)
@@ -129,10 +129,112 @@ class GUI:
       quantity: int = item.split("x")[0]
       self.db.add(name, quantity)
 
-    self.db.display()
-
   def edit_inventory(self) -> None:
-    print("Edit inventory")
+    self.inventory: tk.Tk = tk.Tk()
+    self.inventory.title("Edit Inventory")
+    self.inventory.geometry("250x250")
+    self.inventory.wm_minsize(250, 250)
+    self.inventory.wm_maxsize(250, 250)
+    self.inventory.configure(background="#252526")
+
+    self.inventory.protocol("WM_DELETE_WINDOW", self.callback)
+
+    self.create_inventory_interface()
+
+  def callback(self) -> None:
+    if self.saved == False: 
+      if messagebox.askokcancel("Unsaved changes", "You have unsaved changes. Quit?"):
+        self.inventory.destroy()
+    else: self.inventory.destroy()
+
+  def create_inventory_interface(self) -> None:
+    self.saved: bool = True
+    
+    self.inventory_toolbar_frame: tk.Frame = tk.Frame(
+      self.inventory, width=242, height=34,
+      background="#3e3e42"
+    )
+    self.inventory_toolbar_frame.place(x=4, y=4)
+
+    self.clear_inventory_button: tk.Button = tk.Button(
+      self.inventory_toolbar_frame, text="Clear Inventory",
+      command=self.clear_inventory, background="#3e3e42", foreground="#ffffff"
+    )
+    self.clear_inventory_button.place(x=4, y=4)
+
+    self.budget_label: tk.Label = tk.Label(
+      self.inventory_toolbar_frame, text=f"€{self.db.get()[0][0]:.2f}",
+      width=7, relief="raised", background="#2d2d30", foreground="#ffffff"
+    )
+    self.budget_label.place(x=97, y=6)
+
+    self.save_changes_button: tk.Button = tk.Button(
+      self.inventory_toolbar_frame, text="Save Changes",
+      command=self.save_changes, background="#4f4f54", foreground="#ffffff"
+    )
+    self.save_changes_button.place(x=155, y=4)
+    
+    self.inventory_frame: tk.Frame = tk.Frame(
+      self.inventory, width=242, height=204, background="#3e3e42"
+    )
+    self.inventory_frame.place(x=4, y=42)
+    
+    self.inventory_listbox: tk.Listbox = tk.Listbox(
+      self.inventory_frame, width=20, height=12, borderwidth=0,
+      background="#2d2d30", foreground="#ffffff"
+    )
+    self.inventory_listbox.place(x=4, y=4)
+
+    self.modify_amount_button: tk.Button = tk.Button(
+      self.inventory_frame, text="Modify Amount By:", width=14,
+      command=self.modify_amount, background="#3e3e42", foreground="#ffffff"
+    )
+    self.modify_amount_button.place(x=131, y=4)
+
+    self.modify_amount_spinbox: tk.Spinbox = tk.Spinbox(
+      self.inventory_frame, from_=-256., to=256., buttonbackground="#4f4f54",
+      width=15, background="#3e3e42", foreground="#ffffff"
+    )
+    self.modify_amount_spinbox.delete(0, tk.END)
+    self.modify_amount_spinbox.insert(0, 0)
+    self.modify_amount_spinbox.place(x=132, y=34)
+    
+    for (_, name, quantity) in self.db.get()[1]:
+      self.inventory_listbox.insert(tk.END, f"{quantity}x {name}")
+
+  def clear_inventory(self) -> None:
+    self.inventory_listbox.delete(0, tk.END)
+
+    self.saved = False
+
+  def save_changes(self) -> None:
+    budget: float = self.db.get()[0][0]
+    self.db.reset()
+    self.db.update_budget(budget)
+    
+    for item in self.inventory_listbox.get(0, tk.END):
+      name: str = " ".join(item.split(" ")[1:])
+      quantity: int = item.split("x")[0]
+      self.db.add(name, quantity)
+    
+    self.saved = True
+
+  def modify_amount(self) -> None:
+    selected_index: int = self.inventory_listbox.curselection()
+    amount: int = int(self.modify_amount_spinbox.get())
+    
+    if selected_index != () and amount != 0:
+      selected_index = selected_index[0]
+
+      item: str = self.inventory_listbox.get(selected_index)
+      original_amount: int = int(item.split("x")[0])
+      
+      self.inventory_listbox.delete(selected_index)
+      if original_amount > -amount:
+        modified_item: str = f"{original_amount + amount}x{"".join(item.split("x")[1:])}"
+        self.inventory_listbox.insert(selected_index, modified_item)
+    
+      self.saved = False
 
   def key_handler(self, event) -> None:
     if self.input_display_label.mode == "webcam" and event.keysym == "space":

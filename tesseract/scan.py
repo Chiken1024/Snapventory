@@ -1,12 +1,9 @@
 import pytesseract, re
-import cv2 as cv
 
-from opencv.process_image import process_image
 from opencv.segment_image import segment_image
 
 def scan(frame) -> str:
   segmented_image = segment_image(frame)
-  cv.imshow("Segmented Image", segmented_image)
   
   frame_text: str = pytesseract.image_to_string(frame)
   segmented_text: str = pytesseract.image_to_string(segmented_image)
