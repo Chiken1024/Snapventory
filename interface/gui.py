@@ -116,7 +116,7 @@ class GUI:
     self.scan_image_button.place_forget()
     self.input_display_label.cancel()
   
-  def save_to_inventory(self):
+  def save_to_inventory(self) -> None:
     text: list[str] = self.output_text.get("1.0", tk.END).split("\n")
     while "" in text: text.remove("")
 
@@ -132,9 +132,9 @@ class GUI:
   def edit_inventory(self) -> None:
     self.inventory: tk.Tk = tk.Tk()
     self.inventory.title("Edit Inventory")
-    self.inventory.geometry("250x250")
-    self.inventory.wm_minsize(250, 250)
-    self.inventory.wm_maxsize(250, 250)
+    self.inventory.geometry("258x248")
+    self.inventory.wm_minsize(258, 248)
+    self.inventory.wm_maxsize(258, 248)
     self.inventory.configure(background="#252526")
 
     self.inventory.protocol("WM_DELETE_WINDOW", self.callback)
@@ -151,7 +151,7 @@ class GUI:
     self.saved: bool = True
     
     self.inventory_toolbar_frame: tk.Frame = tk.Frame(
-      self.inventory, width=242, height=34,
+      self.inventory, width=250, height=34,
       background="#3e3e42"
     )
     self.inventory_toolbar_frame.place(x=4, y=4)
@@ -164,18 +164,18 @@ class GUI:
 
     self.budget_label: tk.Label = tk.Label(
       self.inventory_toolbar_frame, text=f"€{self.db.get()[0][0]:.2f}",
-      width=7, relief="raised", background="#2d2d30", foreground="#ffffff"
+      width=8, relief="raised", background="#2d2d30", foreground="#ffffff"
     )
-    self.budget_label.place(x=97, y=6)
+    self.budget_label.place(x=98, y=6)
 
     self.save_changes_button: tk.Button = tk.Button(
       self.inventory_toolbar_frame, text="Save Changes",
       command=self.save_changes, background="#4f4f54", foreground="#ffffff"
     )
-    self.save_changes_button.place(x=155, y=4)
+    self.save_changes_button.place(x=163, y=4)
     
     self.inventory_frame: tk.Frame = tk.Frame(
-      self.inventory, width=242, height=204, background="#3e3e42"
+      self.inventory, width=250, height=202, background="#3e3e42"
     )
     self.inventory_frame.place(x=4, y=42)
     
@@ -185,20 +185,66 @@ class GUI:
     )
     self.inventory_listbox.place(x=4, y=4)
 
+    self.modify_amount_frame: tk.Frame = tk.Frame(
+      self.inventory_frame, width=116, height=58, background="#4f4f54"
+    )
+    self.modify_amount_frame.place(x=131, y=4)
+
     self.modify_amount_button: tk.Button = tk.Button(
-      self.inventory_frame, text="Modify Amount By:", width=14,
+      self.modify_amount_frame, text="Modify Amount By:", width=14,
       command=self.modify_amount, background="#3e3e42", foreground="#ffffff"
     )
-    self.modify_amount_button.place(x=131, y=4)
+    self.modify_amount_button.place(x=4, y=4)
 
     self.modify_amount_spinbox: tk.Spinbox = tk.Spinbox(
-      self.inventory_frame, from_=-256., to=256., buttonbackground="#4f4f54",
+      self.modify_amount_frame, from_=-256., to=256., buttonbackground="#4f4f54",
       width=15, background="#3e3e42", foreground="#ffffff"
     )
     self.modify_amount_spinbox.delete(0, tk.END)
     self.modify_amount_spinbox.insert(0, 0)
-    self.modify_amount_spinbox.place(x=132, y=34)
-    
+    self.modify_amount_spinbox.place(x=6, y=34)
+
+    self.remove_item_button: tk.Button = tk.Button(
+      self.inventory_frame, text="Remove Item", width=14,
+      command=self.remove_item, background="#3e3e42", foreground="#ffffff"
+    )
+    self.remove_item_button.place(x=135, y=67)
+
+    self.modify_budget_frame: tk.Frame = tk.Frame(
+      self.inventory_frame, width=116, height=58, background="#4f4f54"
+    )
+    self.modify_budget_frame.place(x=131, y=103)
+
+    tk.Label(
+      self.modify_budget_frame, text="Edit Budget",
+      background="#3e3e42", foreground="#ffffff"
+    ).place(x=4, y=4)
+
+    self.modify_budget_button: tk.Button = tk.Button(
+      self.modify_budget_frame, text="Add", command=self.modify_budget,
+      width=3, background="#3e3e42", foreground="#ffffff"
+    )
+    self.modify_budget_button.place(x=82, y=4)
+
+    self.set_budget_button: tk.Button = tk.Button(
+      self.modify_budget_frame, text="Set", command=self.set_budget,
+      width=3, background="#3e3e42", foreground="#ffffff"
+    )
+    self.set_budget_button.place(x=82, y=29)
+
+    self.modify_budget_entry: tk.Entry = tk.Entry(
+      self.modify_budget_frame, width=7,
+      background="#3e3e42", foreground="#ffffff"
+    )
+    self.modify_budget_entry.insert(0, "0.00")
+    self.modify_budget_entry.place(x=4, y=29)
+
+    self.undo_changes_button: tk.Button = tk.Button(
+      self.inventory_frame, text="Undo Changes", width=14,
+      command=self.undo_changes, background="#3e3e42", foreground="#ffffff"
+    )
+    self.undo_changes_button.place(x=135, y=172)
+
     for (_, name, quantity) in self.db.get()[1]:
       self.inventory_listbox.insert(tk.END, f"{quantity}x {name}")
 
@@ -235,6 +281,38 @@ class GUI:
         self.inventory_listbox.insert(selected_index, modified_item)
     
       self.saved = False
+
+  def remove_item(self) -> None:
+    selected_index: int = self.inventory_listbox.curselection()
+    if selected_index != ():
+      self.inventory_listbox.delete(selected_index)
+      
+      self.saved = False
+
+  def modify_budget(self) -> None:
+    budget_orig: float = float(self.budget_label.cget("text")[1:])
+    amount: float = float(self.modify_budget_entry.get())
+    print(budget_orig, amount)
+    self.budget_label.configure(text=f"€{(budget_orig + amount):.2f}")
+
+    self.saved = False
+
+  def set_budget(self) -> None:
+    amount: float = float(self.modify_budget_entry.get())
+    self.budget_label.configure(text=f"€{amount:.2f}")
+
+    self.saved = False
+
+  def undo_changes(self) -> None:
+    self.inventory_listbox.delete(0, tk.END)
+    db: tuple[float, list] = self.db.get()
+    
+    items: list[str] = db[1][::-1]
+    for item in items: self.inventory_listbox.insert(0, f"{item[2]}x {item[1]}")
+
+    self.budget_label.configure(text=db[0])
+
+    self.saved = True
 
   def key_handler(self, event) -> None:
     if self.input_display_label.mode == "webcam" and event.keysym == "space":

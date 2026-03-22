@@ -2,11 +2,13 @@ import pytesseract, re
 
 from opencv.segment_image import segment_image
 
+CONFIG: str = r"--oem 3 --psm 6"
+
 def scan(frame) -> str:
   segmented_image = segment_image(frame)
   
-  frame_text: str = pytesseract.image_to_string(frame)
-  segmented_text: str = pytesseract.image_to_string(segmented_image)
+  frame_text: str = pytesseract.image_to_string(frame, config=CONFIG)
+  segmented_text: str = pytesseract.image_to_string(segmented_image, config=CONFIG)
 
   text: str = ""
 

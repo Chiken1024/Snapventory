@@ -1,8 +1,19 @@
 # __Snapventory__
+Snapventory is a receipt scanner / budget manager that stores the items you've bought.
 
-## Project description:
-This is a receipt scanner, that reads receipts through the webcam, and stores the information on them to a virtual budget and inventory.
+## Setup
+Use the package manager pip to download the dependencies.
+```bash
+pip install -r ./requirements.txt
+```
 
-## Technologies used:
-__OpenCV__:
-- idk
+## Usage
+To enter items / manually enter the price in case of an error, use this format:
+```
+Price: [Price]
+Items:
+[Amount]x [Item]
+[Amount]x [Item]
+[Amount]x [Item]
+etc.
+```
